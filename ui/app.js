@@ -119,6 +119,7 @@ const resumeText = document.querySelector('#resume-text');
 let detectedLinks = [];
 let editorTouched = false;
 let savedBoldPhrases = [];
+let newUpload = false;
 const boldPhrases = text => [...text.matchAll(/\*\*(.*?)\*\*/g)].map(match => match[1]);
 resumeText.addEventListener('input', () => { editorTouched = true; });
 async function resumeApi(path, payload) {
@@ -130,6 +131,7 @@ async function resumeApi(path, payload) {
 function profileReady(data, afterSave = false) {
   if (data.review_text && (afterSave || !editorTouched)) resumeText.value = data.review_text;
   savedBoldPhrases = afterSave || !editorTouched ? boldPhrases(data.review_text || '') : [];
+  if (afterSave) newUpload = false;
   document.querySelector('#profile-name').textContent = data.name || 'Upload your resume';
   document.querySelector('#profile-summary').textContent = data.name ? 'Local profile connected' : 'No profile connected';
   document.querySelector('#master-summary').textContent = data.name ? `${data.fact_count} reviewed claims · ${data.link_count} clickable links · ${data.emphasis_count} bold phrases` : 'Upload a resume to begin';
@@ -139,6 +141,7 @@ function profileReady(data, afterSave = false) {
 document.querySelector('#use-example').addEventListener('click', async () => {
   detectedLinks = [];
   editorTouched = true;
+  newUpload = true;
   resumeText.value = await (await fetch('/resume-format.txt')).text();
   uploadStatus.textContent = 'Example loaded. Replace all sample details before saving.';
 });
@@ -152,6 +155,7 @@ document.querySelector('#resume-file').addEventListener('change', async event =>
   try {
     if (file.size > 5 * 1024 * 1024) throw new Error('Maximum upload size is 5 MB');
     editorTouched = true;
+    newUpload = true;
     uploadStatus.textContent = 'Reading resume...';
     if (file.name.toLowerCase().endsWith('.txt')) {
       detectedLinks = [];
@@ -176,8 +180,8 @@ document.querySelector('#save-resume').addEventListener('click', async () => {
       return;
     }
     const currentBoldPhrases = boldPhrases(resumeText.value);
-    const preserveEmphasis = savedBoldPhrases.every(phrase => currentBoldPhrases.includes(phrase));
-    const data = await resumeApi('/api/resume', {text:resumeText.value, preserve_emphasis:preserveEmphasis});
+    const clearEmphasis = !newUpload && savedBoldPhrases.some(phrase => !currentBoldPhrases.includes(phrase));
+    const data = await resumeApi('/api/resume', {text:resumeText.value, clear_emphasis:clearEmphasis});
     profileReady(data, true); status.textContent = 'Resume saved. Enter your target role and JD, then tailor.'; status.className = ''; hasResults = false; currentPayload = null;
     document.querySelector('#results').hidden = true; document.querySelector('#empty').hidden = false;
     document.querySelector('#state-pill').textContent = 'Awaiting JD';
