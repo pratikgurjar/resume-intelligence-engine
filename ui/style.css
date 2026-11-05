@@ -3,7 +3,7 @@
 .skill-action-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 25px;background:#f0f6ed;border-bottom:1px solid #dfe9d8}.skill-action-bar strong{font-size:12px}.skill-action-bar p{font-size:10px;line-height:1.6;color:#718269;margin:6px 0 0}.skill-action-bar button{flex:none;border:0;border-radius:5px;background:#315e41;color:white;padding:12px;font-size:11px}.skill-action-bar button:disabled{opacity:.5;cursor:wait}.skill-choice{display:flex;align-items:flex-start;gap:10px;padding:13px 25px;margin:0;border-bottom:1px solid #edf1e9}.skill-choice input{width:16px;margin:2px 0;accent-color:#315e41}.skill-choice strong{display:block;font-size:12px}.skill-choice small{display:block;font-size:10px;color:#85917b;line-height:1.8;margin-top:3px}#skill-message{font-size:11px;line-height:1.7;color:#527246;padding:0 25px}#skill-message:not(:empty){padding:12px 25px}@media(max-width:700px){.skill-action-bar{flex-direction:column;align-items:stretch}}
 .summary{grid-template-columns:1fr 1.15fr 1.4fr 1fr}
 
-.upload-card{padding:25px;background:white;border:1px solid #e0e6e2;border-radius:12px;margin-bottom:20px}.upload-card p,.upload-card details{font-size:12px;line-height:1.7;color:#52695c}.upload-card button{padding:10px;margin:8px 0;border:1px solid #c5d4ca;border-radius:5px;background:#edf4ed}.upload-card textarea{height:230px}.upload-card a{color:#315e41}#upload-status.error{color:#ac493b}
+.upload-card{padding:25px;background:white;border:1px solid #e0e6e2;border-radius:12px;margin-bottom:20px}.upload-card p,.upload-card details{font-size:12px;line-height:1.7;color:#52695c}.upload-card button{padding:12px 16px;margin:0;border:1px solid #c5d4ca;border-radius:6px;background:#f7faf6;color:#244f40;font-size:12px;font-weight:600;min-height:44px;width:100%}.upload-card a{color:#315e41}#upload-status.error{color:#ac493b}
 .resume-picker{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:20px 16px;margin:18px 0 0;border:1.5px dashed #b7cbbd;border-radius:10px;background:#f7faf6;cursor:pointer;transition:border-color .15s,background .15s}
 .resume-picker:hover,.resume-picker:focus-within{border-color:#315e41;background:#eef5eb}
 .resume-picker:focus-within{outline:3px solid #b8d0ba;outline-offset:3px}
@@ -12,3 +12,28 @@
 .browse-label{padding:9px 12px;border:1px solid #c9d8c8;border-radius:6px;background:white;color:#315e41;font-size:11px;white-space:nowrap}
 .resume-picker #resume-file{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
 .upload-card .file-selection{margin:9px 1px 16px;font-size:11px;color:#7b8978;overflow-wrap:anywhere}.upload-card .file-selection.has-file{color:#315e41}
+
+/* Shared sidebar control dimensions and interaction states. */
+aside input:not([type="file"]),aside textarea{border:1px solid #dce3de;border-radius:6px;font-size:12px;line-height:1.6;padding:12px;background:#fcfdfc}
+aside input:not([type="file"]){min-height:44px}
+aside textarea{height:260px;min-height:160px}
+aside button,#generate{min-height:44px;border-radius:6px;font-size:12px;font-weight:600}
+.resume-actions{display:grid;gap:10px;margin-top:12px}
+.upload-card #save-resume{background:#244f40;border-color:#244f40;color:white}
+.upload-card #save-resume:hover{background:#173e31}
+.upload-card button:hover,.example-download:hover{border-color:#567d68;background:#eef5eb}
+.upload-card button:disabled{opacity:.6;cursor:wait}
+.browse-label{display:flex;align-items:center;justify-content:center;min-height:44px;font-size:12px;font-weight:600}
+.format-guide{border:1px solid #dce3de;border-radius:6px;background:#fcfdfc;margin:16px 0;overflow:visible}
+.format-guide summary{display:flex;align-items:center;gap:9px;min-height:44px;padding:12px;font-size:12px;font-weight:600;color:#244f40;cursor:pointer;list-style:none;border-radius:6px}
+.format-guide summary::-webkit-details-marker{display:none}
+.format-guide summary::before{content:'›';font-size:18px;line-height:1;transition:transform .15s}
+.format-guide[open] summary::before{transform:rotate(90deg)}
+.format-guide summary:hover{background:#eef5eb}
+.format-guide summary:focus-visible{outline:3px solid #92b999;outline-offset:3px}
+.format-content{display:grid;gap:10px;padding:0 12px 12px;border-top:1px solid #e6ebe7}
+.format-content p{margin:10px 0 0}
+.upload-card .example-download{display:flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border:1px solid #c5d4ca;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;background:#f7faf6}
+@media(max-width:900px){aside textarea{height:220px}}
+aside input:not([type="file"]),aside button,#generate,.browse-label,.format-guide summary,.upload-card .example-download{line-height:18px}
+#generate{padding:12px 16px}
