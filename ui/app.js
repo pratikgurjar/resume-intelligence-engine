@@ -116,6 +116,7 @@ showTab('preview');
 
 const uploadStatus = document.querySelector('#upload-status');
 const resumeText = document.querySelector('#resume-text');
+let detectedLinks = [];
 async function resumeApi(path, payload) {
   const response = await fetch(path, {method: 'POST', headers: {'Content-Type':'application/json', 'X-Resume-Token':document.querySelector('meta[name=resume-token]').content}, body:JSON.stringify(payload)});
   const data = await response.json();
@@ -123,13 +124,15 @@ async function resumeApi(path, payload) {
   return data;
 }
 function profileReady(data) {
+  if (!resumeText.value && data.review_text) resumeText.value = data.review_text;
   document.querySelector('#profile-name').textContent = data.name || 'Upload your resume';
   document.querySelector('#profile-summary').textContent = data.name ? 'Local profile connected' : 'No profile connected';
-  document.querySelector('#master-summary').textContent = data.name ? `${data.fact_count} reviewed resume claims` : 'Upload a resume to begin';
+  document.querySelector('#master-summary').textContent = data.name ? `${data.fact_count} reviewed claims · ${data.link_count} clickable links` : 'Upload a resume to begin';
   generate.disabled = !data.name;
   status.textContent = data.name ? 'Resume connected. Enter a target role and JD to tailor.' : 'Upload and save your reviewed resume above to enable tailoring.';
 }
 document.querySelector('#use-example').addEventListener('click', async () => {
+  detectedLinks = [];
   resumeText.value = await (await fetch('/resume-format.txt')).text();
   uploadStatus.textContent = 'Example loaded. Replace all sample details before saving.';
 });
@@ -144,15 +147,17 @@ document.querySelector('#resume-file').addEventListener('change', async event =>
     if (file.size > 5 * 1024 * 1024) throw new Error('Maximum upload size is 5 MB');
     uploadStatus.textContent = 'Reading resume...';
     if (file.name.toLowerCase().endsWith('.txt')) {
+      detectedLinks = [];
       resumeText.value = new TextDecoder('utf-8', {fatal:true}).decode(await file.arrayBuffer());
     } else if (file.name.toLowerCase().endsWith('.pdf')) {
       const bytes = new Uint8Array(await file.arrayBuffer()); let binary = '';
       for (let i=0; i<bytes.length; i+=8192) binary += String.fromCharCode(...bytes.subarray(i,i+8192));
-      const extracted = (await resumeApi('/api/extract', {data:btoa(binary)})).text;
-      resumeText.value = extracted;
-      resumeText.value = (await resumeApi('/api/prepare', {text:extracted})).text;
+      const extracted = await resumeApi('/api/extract', {data:btoa(binary)});
+      detectedLinks = extracted.links;
+      resumeText.value = extracted.text;
+      resumeText.value = (await resumeApi('/api/prepare', {text:extracted.text, links:detectedLinks})).text;
     } else throw new Error('Choose a PDF or UTF-8 TXT file');
-    uploadStatus.textContent = 'Review the detected name, headline, employer boundaries, and bullets below. Correct any missing fields, then save.';
+    uploadStatus.textContent = 'Review detected contact details, URLs, employer boundaries, and bullets below. Correct any missing fields, then save.';
   } catch (error) { importError(error); }
   finally { save.disabled = false; }
 });
@@ -181,7 +186,7 @@ function importError(error) {
   uploadStatus.scrollIntoView({behavior:'smooth', block:'center'});
 }
 async function prepareText() {
-  const data = await resumeApi('/api/prepare', {text:resumeText.value});
+  const data = await resumeApi('/api/prepare', {text:resumeText.value, links:detectedLinks});
   resumeText.value = data.text;
   uploadStatus.className = '';
   uploadStatus.textContent = 'Draft prepared. Review contact fields and employer boundaries, then click Save reviewed resume.';

@@ -26,6 +26,16 @@ def download_name(company, role, extension):
     return f'Resume_{safe_name(company)}_{safe_name(role)}.{extension}'
 
 
+def profile_info(profile):
+    from src.resume_import import review_text
+    urls = set(profile['candidate'].get('links', {}).values()) if profile else set()
+    if profile:
+        urls.update(f['url'] for f in profile['facts'] if f.get('url'))
+    return {'name': profile['candidate']['name'] if profile else None,
+            'fact_count': len(profile['facts']) if profile else 0, 'link_count': len(urls),
+            'review_text': review_text(profile) if profile else ''}
+
+
 def generate(payload, output_root):
     for key in ('jd', 'company', 'role'):
         if not isinstance(payload.get(key), str) or not payload[key].strip():
@@ -152,8 +162,7 @@ def make_server(port=8765, output_root=None):
             if path == '/api/profile':
                 from src.main import PROFILE
                 profile = load_profile() if PROFILE.exists() else None
-                return self.send(200, {'name': profile['candidate']['name'] if profile else None,
-                                       'fact_count': len(profile['facts']) if profile else 0})
+                return self.send(200, profile_info(profile))
             if path in ('/app.js', '/style.css', '/resume-format.txt'):
                 file = UI / path[1:]
             elif path.startswith('/runs/'):
@@ -214,10 +223,11 @@ def make_server(port=8765, output_root=None):
                             raise ValueError('PDF could not be read; upload the recommended TXT format') from exc
                         if not text.strip() or len(text) > 60000:
                             raise ValueError('PDF needs selectable text under 60,000 characters; scanned PDFs need OCR first')
-                        result = {'text': text}
+                        from src.pdf_links import extract_links
+                        result = {'text': text, 'links': extract_links(data, reader)}
                     elif self.path == '/api/prepare':
                         from src.resume_import import prepare_resume
-                        result = {'text': prepare_resume(payload.get('text'))}
+                        result = {'text': prepare_resume(payload.get('text'), payload.get('links'))}
                     elif self.path == '/api/resume':
                         from src.resume_import import parse_resume
                         from src.main import PROFILE, dump
@@ -226,7 +236,7 @@ def make_server(port=8765, output_root=None):
                         temporary = PROFILE.with_suffix('.tmp')
                         dump(temporary, profile)
                         temporary.replace(PROFILE)
-                        result = {'name': profile['candidate']['name'], 'fact_count': len(profile['facts'])}
+                        result = profile_info(profile)
                     else:
                         from src.main import PROFILE
                         if not PROFILE.exists():

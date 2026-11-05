@@ -90,6 +90,14 @@ Example University, Bachelor of Science, 2021
             prepare_resume('A flat document without detectable headings. ' * 3)
         self.assertEqual(self.text, prepare_resume(self.text))
 
+    def test_manual_links_and_unsafe_destinations(self):
+        text = self.text.replace('[Summary]', 'Link: GitHub | https://example.org/github\n\n[Summary]')
+        p = parse_resume(text)
+        self.assertEqual({'Portfolio':'https://example.org', 'GitHub':'https://example.org/github'}, p['candidate']['links'])
+        for url in ('javascript:alert(1)', 'file:///secret', 'http://example.org', 'https://example.org\nInjected'):
+            with self.assertRaises(ValueError):
+                prepare_resume(self.text, [{'label':'Website','url':url}])
+
 
 class ApiTests(unittest.TestCase):
     def setUp(self):
@@ -155,6 +163,59 @@ class ApiTests(unittest.TestCase):
         self.assertIn('Synthetic resume text', json.loads(data)['text'])
         for value in ('not base64', base64.b64encode(b'%PDF invalid').decode()):
             self.assertEqual(400, self.request('POST', '/api/extract', {'data':value})[0])
+
+    def test_pdf_links_and_contact_details_survive_import_and_export(self):
+        from reportlab.pdfgen.canvas import Canvas
+        from pypdf import PdfReader
+        stream = io.BytesIO(); canvas = Canvas(stream)
+        source = [
+            ('ALEX EXAMPLE', []), ('SOFTWARE ENGINEER', []),
+            ('alex@example.com | +1-555-010-1234 | LinkedIn | GitHub | Portfolio | Example City, Country | Available now',
+             [('LinkedIn','https://example.org/linkedin'),('GitHub','https://example.org/github'),('Portfolio','https://example.org/portfolio')]),
+            ('SUMMARY',[]), ('Engineer building services.',[]), ('SKILLS',[]), ('Languages: Python, JavaScript',[]),
+            ('PROJECTS',[]), ('SampleApp Python utility',[('SampleApp','https://example.org/sample')]),
+            ('- Built a file parser.',[]), ('OtherApp React UI',[('OtherApp','https://example.org/other')]),
+            ('- Built a task manager.',[]), ('CERTIFICATIONS',[]),
+            ('Cloud Developer (CloudCo, 2026)',[('CloudCo','https://example.org/cloud')]),
+            ('Database Developer (DataCo, 2025)',[('DataCo','https://example.org/data')])]
+        canvas.setFont('Helvetica',8)
+        for index, (line, links) in enumerate(source):
+            y = 750-index*18; canvas.drawString(30,y,line)
+            for label,url in links:
+                left=30+canvas.stringWidth(line[:line.index(label)],'Helvetica',8)
+                canvas.linkURL(url,(left,y-1,left+canvas.stringWidth(label,'Helvetica',8),y+8),relative=0)
+        canvas.save()
+        status, body, _ = self.request('POST','/api/extract',{'data':base64.b64encode(stream.getvalue()).decode()})
+        self.assertEqual(200,status,body)
+        extracted=json.loads(body)
+        self.assertEqual(7,len(extracted['links']))
+        status, body, _ = self.request('POST','/api/prepare',extracted)
+        self.assertEqual(200,status,body)
+        draft=json.loads(body)['text']
+        self.assertIn('Location: Example City, Country',draft)
+        self.assertIn('Availability: Available now',draft)
+        status, body, _ = self.request('POST','/api/resume',{'text':draft})
+        self.assertEqual(200,status,body)
+        profile=json.loads(self.profile.read_text())
+        self.assertEqual(3,len(profile['candidate']['links']))
+        self.assertEqual(4,len([f for f in profile['facts'] if f.get('url')]))
+        _, saved, _ = self.request('GET', '/api/profile')
+        saved = json.loads(saved)
+        self.assertEqual(7, saved['link_count'])
+        restored = parse_resume(saved['review_text'])
+        self.assertEqual(profile['candidate'], restored['candidate'])
+        self.assertEqual([f.get('url') for f in profile['facts']], [f.get('url') for f in restored['facts']])
+        tex=render(profile,tailor(profile,[]))
+        for link in extracted['links']:
+            self.assertIn(link['url'],tex)
+        status, body, _ = self.request('POST','/api/tailor',{'company':'Example','role':'Engineer','jd':'Python required'})
+        self.assertEqual(200,status,body)
+        result=json.loads(body)
+        self.assertEqual('passed',result['validation']['pdf']['status'])
+        _, pdf, _ = self.request('GET',result['downloads']['resume.pdf'])
+        reader=PdfReader(io.BytesIO(pdf))
+        urls={str(a.get_object().get('/A',{}).get('/URI','')) for page in reader.pages for a in page.get('/Annots',[])}
+        self.assertEqual({link['url'] for link in extracted['links']},urls)
 
     def test_token_and_file_boundary(self):
         self.assertEqual(403, self.request('POST','/api/resume',{'text':self.text},False)[0])

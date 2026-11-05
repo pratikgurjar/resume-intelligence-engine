@@ -32,7 +32,11 @@ def markup(f, highlights=None, additions=None):
             text += html.escape(suffix(additions))
     if f['section'] == 'certifications' and f.get('url'):
         label = html.escape(f['link_label'])
-        text = text.replace('(' + label + ',', '(' + link_markup(f['url'], label) + ',')
+        linked = link_markup(f['url'], label)
+        if '(' + label + ',' in text:
+            text = text.replace('(' + label + ',', '(' + linked + ',', 1)
+        else:
+            text = text.replace(label, linked, 1)
     return text
 
 
@@ -141,9 +145,10 @@ def create_proof(profile, content, output):
                 raise ValueError('Missing or invalid profile link: ' + label)
             links.append('<link href="' + html.escape(url, quote=True) + '"><font color="#0000CC"><u>'
                          + html.escape(label) + '</u></font></link>')
-        header_text = (html.escape(info['email'] + '  |  ' + info['phone']) +
-                       '  |  '.join([''] + links + ['']) +
-                       html.escape(info['location'] + '  |  ' + info['availability']))
+        contact_parts = [html.escape(info[k]) for k in ('email', 'phone') if info[k]]
+        contact_parts.extend(links)
+        contact_parts.extend(html.escape(info[k]) for k in ('location', 'availability') if info[k])
+        header_text = '  |  '.join(contact_parts)
         hp = Paragraph(header_text, ParagraphStyle('header', fontName='Calibri', fontSize=8.5,
                                                  leading=10, textColor=MUTED, alignment=1))
         _, hh = hp.wrap(540, 30)

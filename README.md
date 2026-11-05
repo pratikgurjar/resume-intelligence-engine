@@ -53,7 +53,7 @@ Built a task manager using React and TypeScript.
 Example University, Bachelor of Science, 2023
 ```
 
-Name, headline, email, and a nonempty Skills section are required. Other sections are optional. Supported section names are Summary, Skills, Experience, Projects, Education, Achievements, and Certifications. Each experience header uses `Company | Role | Dates`; every following experience bullet begins with `-`. Skills rows use `Category: skill, skill`. Contact fields appear above sections. No dates, credentials, tenure, or qualifications are inferred. URLs in uploaded text are preserved as text; automatic project and credential link detection is not implemented.
+Name, headline, email, and a nonempty Skills section are required. Other sections are optional. Supported section names are Summary, Skills, Experience, Projects, Education, Achievements, and Certifications. Each experience header uses `Company | Role | Dates`; every following experience bullet begins with `-`. Skills rows use `Category: skill, skill`. Contact fields appear above sections. No dates, credentials, tenure, or qualifications are inferred. PDF HTTPS annotations are recovered with their visible labels. Contact links, project links, and certification links appear in the review editor and remain clickable in the exported PDF. Review the detected location, availability, and URL destinations before saving. In TXT, add `Link: label | https://destination` above sections, `URL: https://destination` after a project `Title:`, or `Link: provider | https://destination` after its certification text. The provider label must occur in that certification. Only HTTPS destinations are supported; missing URLs are never invented.
 
 ## Local data and privacy
 

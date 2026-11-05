@@ -307,7 +307,11 @@ def tex_fact(f, highlights=None, additions=None):
             text += tex_escape(suffix(additions))
     if f['section'] == 'certifications' and f.get('url'):
         label = tex_escape(f['link_label'])
-        text = text.replace('(' + label + ',', '(' + tex_link(f['url'], label) + ',')
+        linked = tex_link(f['url'], label)
+        if '(' + label + ',' in text:
+            text = text.replace('(' + label + ',', '(' + linked + ',', 1)
+        else:
+            text = text.replace(label, linked, 1)
     return text
 
 
@@ -326,7 +330,7 @@ def render(profile, content):
     from src.skill_actions import plan
     highlights, additions = plan(profile, content.get('selected_skills', []))
     info = c['contact']
-    contact_parts = [e(info['email']), e(info['phone'])]
+    contact_parts = [e(info[k]) for k in ('email', 'phone') if info[k]]
     for label, url in c.get('links', {}).items():
         if url:
             if not re.fullmatch(r'https://[A-Za-z0-9._~:/?#\[\]@!$&\x27()*+,;=%-]+', url):
@@ -334,7 +338,7 @@ def render(profile, content):
             contact_parts.append(r'\href{' + e(url) + r'}{\color{blue}\underline{' + e(label) + '}}')
         else:
             contact_parts.append(e(label))
-    contact_parts.extend([e(info['location']), e(info['availability'])])
+    contact_parts.extend(e(info[k]) for k in ('location', 'availability') if info[k])
     contact_tex = ' | '.join(contact_parts)
     lines = [r'\noindent\begin{minipage}{\linewidth}\centering', r'{\fontsize{17.5}{20}\selectfont\bfseries\color{navy} ' + e(c['name']) + r'}\\[2pt]',
              r'{\fontsize{8.3}{10}\selectfont\color{muted} ' + e(c['headline']) + r'}\\[3pt]',
@@ -383,6 +387,10 @@ def validate_pdf(path, profile, content=None):
     checks = {'one_page': len(reader.pages) == 1, 'text_extractable': len(text.strip()) > 100,
               'all_master_claims_extracted': not missing, 'section_reading_order': heading_order,
               'contact_extracted': profile['candidate']['contact']['email'] in text}
+    checks['header_details_extracted'] = all(normalize(value) in extracted for value in
+        [profile['candidate']['name'], profile['candidate']['headline'], *profile['candidate']['contact'].values()] if value)
+    checks['employer_metadata_extracted'] = all(normalize(employer[key]) in extracted
+        for employer in profile['employers'] for key in ('name', 'title', 'dates', 'context') if employer[key])
     expected_links = [u for u in profile['candidate'].get('links', {}).values() if u]
     actual_links = [str(a.get_object().get('/A', {}).get('/URI', ''))
                     for page in reader.pages for a in (page.get('/Annots') or [])]
@@ -463,7 +471,7 @@ def reports(output, profile, analysis, mapping, score, content, validation, comp
         original.setdefault(f['section'], []).append(f['id'])
     changes = ['# Resume changes', '', 'No factual wording, dates, metrics, roles or employers changed.', '',
                'All master facts retained. Evidence-backed bullets and skill groups reordered by requirement relevance.', '']
-    changes += [f'- {s}: {", ".join(original[s])} → {", ".join(ids)}' for s, ids in content['sections'].items() if original[s] != ids]
+    changes += [f'- {s}: {", ".join(original.get(s, []))} → {", ".join(ids)}' for s, ids in content['sections'].items() if original.get(s, []) != ids]
     changes += ['', 'Pending verification:', *['- ' + x['detail'] for x in profile['unresolved']]]
     (output / 'resume_changes.md').write_text('\n'.join(changes) + '\n', encoding='utf-8')
     selected = [f for f in profile['facts'] if f['section'] == 'experience' and any(f['id'] in r['evidence_ids'] for r in mapping)][:5]

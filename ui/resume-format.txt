@@ -4,6 +4,7 @@ Email: alex@example.com
 Phone:
 Location: Your city
 Availability:
+Link: Portfolio | https://example.org
 
 [Summary]
 Software engineer building web applications.
@@ -18,6 +19,8 @@ Example Company | Software Engineer | 2023 - Present
 - Added automated tests for request validation.
 
 [Projects]
+Title: TaskManager personal project
+URL: https://example.org/task-manager
 Built a personal task manager using React and TypeScript.
 
 [Education]
