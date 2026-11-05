@@ -42,6 +42,8 @@ class ImportTests(unittest.TestCase):
             parse_resume(marked.replace('**REST APIs**', '**REST APIs'))
         with self.assertRaisesRegex(ValueError, 'Bold phrases'):
             parse_resume(marked.replace('**REST APIs**', '****'))
+        with self.assertRaisesRegex(ValueError, 'Bold phrase must occur once'):
+            parse_resume(marked.replace('**REST APIs** using Node.js', '**REST** APIs using REST'))
 
     def test_invalid_structure_is_actionable(self):
         for text in ['', self.text.replace('Email:', 'Mail:'), self.text.replace('Frameworks:', 'Frameworks'),

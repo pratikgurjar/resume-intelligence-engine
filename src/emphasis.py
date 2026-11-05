@@ -9,6 +9,7 @@ def parse_marked_text(value):
     if any(not phrase.strip() or '\n' in phrase for phrase in emphasis):
         raise ValueError('Bold phrases must contain text on one line')
     plain = re.sub(r'\*\*(.*?)\*\*', r'\1', value)
+    emphasized_spans(plain, emphasis)
     return plain, emphasis
 
 
@@ -24,7 +25,7 @@ def emphasized_spans(value, emphasis):
         if not isinstance(phrase, str) or not phrase.strip():
             raise ValueError('Invalid bold phrase')
         start = value.find(phrase)
-        if start < 0 or any(start < end and start + len(phrase) > begin for begin, end in positions):
+        if value.count(phrase) != 1 or any(start < end and start + len(phrase) > begin for begin, end in positions):
             raise ValueError('Bold phrase must occur once without overlapping another phrase')
         positions.append((start, start + len(phrase)))
     result = []
