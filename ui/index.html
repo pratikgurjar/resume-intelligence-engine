@@ -15,7 +15,13 @@
         <section class="upload-card" aria-label="Resume setup">
           <h2>Start with your resume</h2>
           <p>Upload a selectable-text PDF or UTF-8 TXT (maximum 5 MB). Review the text below before saving your local profile.</p>
-          <label for="resume-file">Resume file</label><input id="resume-file" type="file" accept=".pdf,.txt">
+          <label class="resume-picker" for="resume-file">
+            <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4m-4 4 4-4 4 4M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="upload-copy"><strong>Choose your resume</strong><span id="resume-file-help">PDF or TXT · Up to 5 MB</span></span>
+            <span class="browse-label" aria-hidden="true">Browse files</span>
+            <input id="resume-file" type="file" accept=".pdf,.txt" aria-label="Choose resume file" aria-describedby="resume-file-help file-selection">
+          </label>
+          <p id="file-selection" class="file-selection" role="status" aria-live="polite">No file selected</p>
           <details><summary>Recommended format and example</summary><p>Use one column, plain text, labeled contact fields, and the section names shown in the template. Avoid tables, icons, photos, headers, and footers. PDF extraction may need manual correction.</p><a href="/resume-format.txt" download>Download example TXT</a><button id="use-example" type="button">Load example</button><p>Experience: Company | Role | Dates, followed by bullets starting with -. Skills: Category: skill, skill. Keep one complete claim per line.</p></details>
           <label for="resume-text">Review resume text</label><textarea id="resume-text" maxlength="60000" placeholder="Upload a resume, or load the example and replace every sample detail."></textarea>
           <button id="prepare-resume" type="button">Prepare extracted text</button><button id="save-resume" type="button">Save reviewed resume</button><p id="upload-status" role="status" aria-live="polite">Uploads stay in local-data on this computer and are excluded from Git.</p>

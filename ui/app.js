@@ -136,6 +136,9 @@ document.querySelector('#use-example').addEventListener('click', async () => {
 document.querySelector('#resume-file').addEventListener('change', async event => {
   const file = event.target.files[0];
   if (!file) return;
+  const selection = document.querySelector('#file-selection');
+  selection.textContent = `${file.name} · ${file.size < 1024 * 1024 ? `${Math.max(1, Math.round(file.size / 1024))} KB` : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}`;
+  selection.classList.add('has-file');
   const save = document.querySelector('#save-resume'); save.disabled = true;
   try {
     if (file.size > 5 * 1024 * 1024) throw new Error('Maximum upload size is 5 MB');

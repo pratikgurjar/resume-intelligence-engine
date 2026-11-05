@@ -4,3 +4,11 @@
 .summary{grid-template-columns:1fr 1.15fr 1.4fr 1fr}
 
 .upload-card{padding:25px;background:white;border:1px solid #e0e6e2;border-radius:12px;margin-bottom:20px}.upload-card p,.upload-card details{font-size:12px;line-height:1.7;color:#52695c}.upload-card button{padding:10px;margin:8px 0;border:1px solid #c5d4ca;border-radius:5px;background:#edf4ed}.upload-card textarea{height:230px}.upload-card a{color:#315e41}#upload-status.error{color:#ac493b}
+.resume-picker{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:20px 16px;margin:18px 0 0;border:1.5px dashed #b7cbbd;border-radius:10px;background:#f7faf6;cursor:pointer;transition:border-color .15s,background .15s}
+.resume-picker:hover,.resume-picker:focus-within{border-color:#315e41;background:#eef5eb}
+.resume-picker:focus-within{outline:3px solid #b8d0ba;outline-offset:3px}
+.upload-icon{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:10px;background:#e5eee2;color:#315e41}.upload-icon svg{width:23px;height:23px}
+.upload-copy{flex:1;min-width:125px}.upload-copy strong{display:block;font-size:13px;font-weight:600;color:#244f40}.upload-copy>span{display:block;margin-top:5px;font-size:10px;font-weight:400;color:#71816e}
+.browse-label{padding:9px 12px;border:1px solid #c9d8c8;border-radius:6px;background:white;color:#315e41;font-size:11px;white-space:nowrap}
+.resume-picker #resume-file{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.upload-card .file-selection{margin:9px 1px 16px;font-size:11px;color:#7b8978;overflow-wrap:anywhere}.upload-card .file-selection.has-file{color:#315e41}
