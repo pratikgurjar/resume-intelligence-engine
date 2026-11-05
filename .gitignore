@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+output/
+*.aux
+*.log
+*.out
+*.synctex.gz
+local-data/
+.venv/
+
