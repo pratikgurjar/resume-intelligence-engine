@@ -18,7 +18,7 @@
           <label for="resume-file">Resume file</label><input id="resume-file" type="file" accept=".pdf,.txt">
           <details><summary>Recommended format and example</summary><p>Use one column, plain text, labeled contact fields, and the section names shown in the template. Avoid tables, icons, photos, headers, and footers. PDF extraction may need manual correction.</p><a href="/resume-format.txt" download>Download example TXT</a><button id="use-example" type="button">Load example</button><p>Experience: Company | Role | Dates, followed by bullets starting with -. Skills: Category: skill, skill. Keep one complete claim per line.</p></details>
           <label for="resume-text">Review resume text</label><textarea id="resume-text" maxlength="60000" placeholder="Upload a resume, or load the example and replace every sample detail."></textarea>
-          <button id="save-resume" type="button">Save reviewed resume</button><p id="upload-status" role="status" aria-live="polite">Uploads stay in local-data on this computer and are excluded from Git.</p>
+          <button id="prepare-resume" type="button">Prepare extracted text</button><button id="save-resume" type="button">Save reviewed resume</button><p id="upload-status" role="status" aria-live="polite">Uploads stay in local-data on this computer and are excluded from Git.</p>
         </section>
         <form id="tailor-form">
           <div class="step"><span>01</span><h2>Target opportunity</h2></div>
@@ -28,7 +28,7 @@
           <textarea id="jd" name="jd" placeholder="Paste the responsibilities, required skills, and qualifications here…" maxlength="60000" required></textarea>
           <p class="hint">Your original resume stays intact. Only approved content is prioritized within its existing sections.</p>
           <button id="generate" type="submit" disabled>Tailor my resume <span aria-hidden="true">↗</span></button>
-          <p id="status" role="status" aria-live="polite">Ready when you are.</p>
+          <p id="status" role="status" aria-live="polite">Upload and save your reviewed resume above to enable tailoring.</p>
         </form>
         <div class="master-card"><span class="check">✓</span><div><strong>Built from your master</strong><p><span id="master-summary">Upload a resume to begin</span><br>Fixed layout · Reviewed source claims</p></div></div>
       </aside>

@@ -60,3 +60,6 @@ Uploaded claims are user statements, not independent verification. Links in free
 
 ## Optional Follow-up Improvements
 Add reviewed employer/date extraction, optional contact-link fields, OCR integration, and configurable fonts as separate changes.
+
+## PDF import correction
+The original PDF extractor flattened contact fields and section boundaries, while saving required explicit labeled fields. Layout-preserving extraction now feeds an editable preparation step. Employer date rows, context, project headings, and wrapped bullets are preserved; ambiguous text still needs review. Import errors appear at both the upload and tailoring controls. 20 synthetic tests and JS syntax passed. A local personal PDF was used only for local verification: 27 claims retained, one page, extraction checks passed. It was not added to Git. The browser automation extension blocked automated file selection because file-URL access was disabled; the real PDF import was therefore exercised via local HTTP plus browser generation.

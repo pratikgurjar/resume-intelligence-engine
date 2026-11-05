@@ -127,6 +127,7 @@ function profileReady(data) {
   document.querySelector('#profile-summary').textContent = data.name ? 'Local profile connected' : 'No profile connected';
   document.querySelector('#master-summary').textContent = data.name ? `${data.fact_count} reviewed resume claims` : 'Upload a resume to begin';
   generate.disabled = !data.name;
+  status.textContent = data.name ? 'Resume connected. Enter a target role and JD to tailor.' : 'Upload and save your reviewed resume above to enable tailoring.';
 }
 document.querySelector('#use-example').addEventListener('click', async () => {
   resumeText.value = await (await fetch('/resume-format.txt')).text();
@@ -144,21 +145,45 @@ document.querySelector('#resume-file').addEventListener('change', async event =>
     } else if (file.name.toLowerCase().endsWith('.pdf')) {
       const bytes = new Uint8Array(await file.arrayBuffer()); let binary = '';
       for (let i=0; i<bytes.length; i+=8192) binary += String.fromCharCode(...bytes.subarray(i,i+8192));
-      resumeText.value = (await resumeApi('/api/extract', {data:btoa(binary)})).text;
+      const extracted = (await resumeApi('/api/extract', {data:btoa(binary)})).text;
+      resumeText.value = extracted;
+      resumeText.value = (await resumeApi('/api/prepare', {text:extracted})).text;
     } else throw new Error('Choose a PDF or UTF-8 TXT file');
-    uploadStatus.textContent = 'Review the extracted text. Use the recommended field labels and section headings, then save.';
-  } catch (error) { uploadStatus.textContent = error.message; }
+    uploadStatus.textContent = 'Review the detected name, headline, employer boundaries, and bullets below. Correct any missing fields, then save.';
+  } catch (error) { importError(error); }
   finally { save.disabled = false; }
 });
 document.querySelector('#save-resume').addEventListener('click', async () => {
   const button = document.querySelector('#save-resume'); button.disabled = true;
   try {
+    if (!/^Name:/mi.test(resumeText.value)) {
+      await prepareText();
+      return;
+    }
     const data = await resumeApi('/api/resume', {text:resumeText.value});
-    profileReady(data); hasResults = false; currentPayload = null;
+    profileReady(data); status.textContent = 'Resume saved. Enter your target role and JD, then tailor.'; status.className = ''; hasResults = false; currentPayload = null;
     document.querySelector('#results').hidden = true; document.querySelector('#empty').hidden = false;
     document.querySelector('#state-pill').textContent = 'Awaiting JD';
     uploadStatus.textContent = `Saved ${data.fact_count} claims locally. Enter a job description below.`;
-  } catch (error) { uploadStatus.textContent = error.message; }
+  } catch (error) { importError(error); }
   finally { button.disabled = false; }
 });
 fetch('/api/profile').then(response => { if (!response.ok) throw new Error('Profile status unavailable'); return response.json(); }).then(profileReady).catch(error => { uploadStatus.textContent = error.message; });
+
+function importError(error) {
+  uploadStatus.textContent = error.message;
+  uploadStatus.className = 'error';
+  status.textContent = 'Resume import needs attention: ' + error.message;
+  status.className = 'error';
+  uploadStatus.scrollIntoView({behavior:'smooth', block:'center'});
+}
+async function prepareText() {
+  const data = await resumeApi('/api/prepare', {text:resumeText.value});
+  resumeText.value = data.text;
+  uploadStatus.className = '';
+  uploadStatus.textContent = 'Draft prepared. Review contact fields and employer boundaries, then click Save reviewed resume.';
+  resumeText.focus();
+}
+document.querySelector('#prepare-resume').addEventListener('click', async () => {
+  try { await prepareText(); } catch (error) { importError(error); }
+});

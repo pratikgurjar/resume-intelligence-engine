@@ -186,7 +186,7 @@ def make_server(port=8765, output_root=None):
             raw = self.rfile.read(size)
             if not self.allowed_host() or self.headers.get('X-Resume-Token') != token:
                 return self.send(403, {'error': 'Reload this local page and try again'})
-            if self.path not in ('/api/tailor', '/api/extract', '/api/resume'):
+            if self.path not in ('/api/tailor', '/api/extract', '/api/resume', '/api/prepare'):
                 return self.send(404, {'error': 'Endpoint not found'})
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 return self.send(415, {'error': 'JSON required'})
@@ -207,7 +207,7 @@ def make_server(port=8765, output_root=None):
                             reader = PdfReader(io.BytesIO(data))
                             if reader.is_encrypted or not 1 <= len(reader.pages) <= 10:
                                 raise ValueError('Use an unencrypted PDF of 1 to 10 pages')
-                            text = '\n'.join(page.extract_text() or '' for page in reader.pages)
+                            text = '\n'.join(page.extract_text(extraction_mode='layout') or '' for page in reader.pages)
                         except ValueError:
                             raise
                         except Exception as exc:
@@ -215,6 +215,9 @@ def make_server(port=8765, output_root=None):
                         if not text.strip() or len(text) > 60000:
                             raise ValueError('PDF needs selectable text under 60,000 characters; scanned PDFs need OCR first')
                         result = {'text': text}
+                    elif self.path == '/api/prepare':
+                        from src.resume_import import prepare_resume
+                        result = {'text': prepare_resume(payload.get('text'))}
                     elif self.path == '/api/resume':
                         from src.resume_import import parse_resume
                         from src.main import PROFILE, dump

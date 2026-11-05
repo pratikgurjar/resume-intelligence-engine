@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from src.main import ROOT, analyze_jd, match_requirements, tailor, render, validate_content
-from src.resume_import import parse_resume
+from src.resume_import import parse_resume, prepare_resume
 from src.web import make_server
 
 
@@ -45,6 +45,50 @@ class ImportTests(unittest.TestCase):
         content = tailor(p, [])
         content['claims'][0]['text'] = 'Invented experience'
         with self.assertRaises(ValueError): validate_content(p, content)
+
+    def test_pdf_layout_preparation_preserves_wrapped_claims_and_groups(self):
+        raw = '''ALEX EXAMPLE
+SOFTWARE ENGINEER
+alex@example.com | +1-555-010-1234
+SUMMARY
+Engineer building services
+with automated tests.
+SKILLS
+Languages: Python,
+JavaScript
+EXPERIENCE
+Example Company, Software Engineer              Jan 2023 - Present
+Backend services team
+� Built APIs using Node.js
+  and request validation.
+Second Company, Engineer                       Jan 2021 - Dec 2022
+• Added database tests.
+PROJECTS
+SampleApp React task manager
+• Built a task manager.
+  Added request validation.
+OtherApp Python utility
+• Built a file parser.
+EDUCATION
+Example University, Bachelor of Science, 2021
+'''
+        prepared = prepare_resume(raw)
+        p = parse_resume(prepared)
+        self.assertEqual(2, len(p['employers']))
+        self.assertIn('Engineer building services with automated tests.', prepared)
+        self.assertIn('Languages: Python, JavaScript', prepared)
+        self.assertIn('- Built APIs using Node.js and request validation.', prepared)
+        self.assertEqual('ALEX EXAMPLE', p['candidate']['name'])
+        self.assertEqual('Backend services team', p['employers'][0]['context'])
+        projects = [f for f in p['facts'] if f['section'] == 'projects']
+        self.assertEqual(2, len(projects))
+        self.assertEqual('SampleApp React task manager', projects[0]['title'])
+        self.assertIn('Added request validation.', projects[0]['approved_text'])
+
+    def test_preparation_does_not_guess_unstructured_employers(self):
+        with self.assertRaisesRegex(ValueError, 'Section headings'):
+            prepare_resume('A flat document without detectable headings. ' * 3)
+        self.assertEqual(self.text, prepare_resume(self.text))
 
 
 class ApiTests(unittest.TestCase):

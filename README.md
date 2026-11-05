@@ -20,7 +20,7 @@ If Python opens the Microsoft Store, install Python and reopen PowerShell. Keep 
 
 1. Choose a UTF-8 TXT or selectable-text PDF, up to 5 MB. PDFs must be unencrypted, with 1 to 10 pages. Scanned PDFs need OCR outside this app.
 2. Open **Recommended format and example**. Download the TXT example or load it into the editor. Replace every example detail with your own information.
-3. Review the text and arrange it using the labeled fields and section headings below. PDF extraction does not automatically infer employer boundaries or contact fields.
+3. Review the text and arrange it using the labeled fields and section headings below. PDF extraction preserves layout and prepares detected contact fields, headings, employer date rows, project titles, and wrapped bullets for review. Correct any ambiguous or missing fields before saving.
 4. Select **Save reviewed resume**. The app validates the structure before replacing the local profile. Invalid input leaves the previous profile intact.
 5. Enter the company, role, and JD, then select **Tailor my resume**. Review the PDF, changes, and evidence gaps.
 6. Use **Add & highlight supported skills** to surface literal skills already backed by the upload. Adjust selections in **Evidence & gaps**. Review the final PDF before applying.
@@ -82,4 +82,4 @@ The CLI uses the locally saved profile after UI import. Example:
 & $ResumePython -m src.main tailor --jd input/java_backend.synthetic.txt --company Example --role 'Backend Engineer'
 ```
 
-CLI tailoring requires XeLaTeX to export its PDF. The UI provides the disclosed ReportLab fallback. Tests use synthetic data only. No full visual similarity, cross-browser, or ATS certification is claimed.
+CLI tailoring requires XeLaTeX to export its PDF. The UI provides the disclosed ReportLab fallback. Tests use synthetic data only. The PDF preparation regression covers wrapped claims, multiple employers, and project grouping. No full visual similarity, cross-browser, or ATS certification is claimed.
