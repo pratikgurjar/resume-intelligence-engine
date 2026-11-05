@@ -33,6 +33,7 @@ def profile_info(profile):
         urls.update(f['url'] for f in profile['facts'] if f.get('url'))
     return {'name': profile['candidate']['name'] if profile else None,
             'fact_count': len(profile['facts']) if profile else 0, 'link_count': len(urls),
+            'emphasis_count': sum(len(f.get('emphasis', [])) for f in profile['facts']) if profile else 0,
             'review_text': review_text(profile) if profile else ''}
 
 
@@ -229,9 +230,14 @@ def make_server(port=8765, output_root=None):
                         from src.resume_import import prepare_resume
                         result = {'text': prepare_resume(payload.get('text'), payload.get('links'))}
                     elif self.path == '/api/resume':
-                        from src.resume_import import parse_resume
+                        from src.resume_import import parse_resume, retain_existing_emphasis
                         from src.main import PROFILE, dump
                         profile = parse_resume(payload.get('text'))
+                        preserve_emphasis = payload.get('preserve_emphasis', True)
+                        if not isinstance(preserve_emphasis, bool):
+                            raise ValueError('preserve_emphasis must be a boolean')
+                        if preserve_emphasis and PROFILE.exists():
+                            profile = retain_existing_emphasis(profile, load_profile())
                         PROFILE.parent.mkdir(parents=True, exist_ok=True)
                         temporary = PROFILE.with_suffix('.tmp')
                         dump(temporary, profile)

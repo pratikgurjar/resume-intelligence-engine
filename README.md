@@ -60,6 +60,8 @@ Name, headline, email, and a nonempty Skills section are required. Other section
 
 The saved profile is `local-data/candidate_profile.json`. It persists across restarts and is excluded from Git. New uploads replace this single local profile. This is a single-user local tool, not a hosted multi-user service. Generated runs are separate directories under `output/ui`, also excluded from Git. An old run remains there after replacing the profile. Delete local-data and output yourself when you want to remove saved personal data.
 
+The UI shows the saved bold-phrase count. Saving an older unmarked draft of the same candidate retains previously reviewed bold phrases on unchanged claims. The editor then refreshes from the saved profile so the markers are visible; removing markers from that current draft clears their emphasis when saved. Existing downloaded PDFs are snapshots and do not update when the profile changes; generate again and open the newest PDF from the workspace.
+
 The server binds to loopback, checks Host and a per-launch request token, limits request sizes, and exposes an allowlist of generated files. No external AI requests, analytics, applications, email, or credentials are sent. Do not expose the server publicly.
 
 Removing files from the current source tree does not remove earlier Git history. Keep any repository containing historic personal resumes private until that history has been replaced or a new clean repository is created.

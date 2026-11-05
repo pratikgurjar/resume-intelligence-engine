@@ -34,6 +34,24 @@ def review_text(profile):
     return '\n'.join(lines) + '\n'
 
 
+def retain_existing_emphasis(profile, existing):
+    """Keep reviewed formatting when an older editor draft saves unchanged claims."""
+    if (profile['candidate']['name'], profile['candidate']['contact']['email']) != (
+        existing['candidate']['name'], existing['candidate']['contact']['email']
+    ):
+        return profile
+    previous = {}
+    for fact in existing['facts']:
+        if fact.get('emphasis'):
+            key = fact['section'], fact['approved_text']
+            previous.setdefault(key, []).append(fact['emphasis'])
+    for fact in profile['facts']:
+        key = fact['section'], fact['approved_text']
+        if not fact.get('emphasis') and len(previous.get(key, [])) == 1:
+            fact['emphasis'] = previous[key][0].copy()
+    return profile
+
+
 def prepare_resume(text, links=None):
     """Convert layout-preserving extraction to an editable draft, never auto-save."""
     if not isinstance(text, str) or not 50 <= len(text) <= 60000:

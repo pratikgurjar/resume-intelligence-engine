@@ -155,6 +155,25 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(400, self.request('POST', '/api/resume', {'text':'invalid'})[0])
         self.assertEqual(before, self.profile.read_bytes())
 
+    def test_saving_older_unmarked_draft_keeps_reviewed_emphasis(self):
+        status, body, _ = self.request('POST', '/api/resume', {'text':self.text})
+        self.assertEqual(200, status, body)
+        self.assertEqual(1, json.loads(body)['emphasis_count'])
+        old_draft = self.text.replace('**', '')
+        status, body, _ = self.request('POST', '/api/resume', {'text':old_draft})
+        self.assertEqual(200, status, body)
+        self.assertEqual(1, json.loads(body)['emphasis_count'])
+        self.assertIn('**REST APIs**', json.loads(body)['review_text'])
+        self.assertEqual(['REST APIs'], next(f['emphasis'] for f in json.loads(self.profile.read_text())['facts'] if f['section'] == 'experience'))
+        status, body, _ = self.request('POST', '/api/resume', {'text':old_draft, 'preserve_emphasis':False})
+        self.assertEqual(200, status, body)
+        self.assertEqual(0, json.loads(body)['emphasis_count'])
+        self.assertEqual(400, self.request('POST', '/api/resume', {'text':old_draft, 'preserve_emphasis':'false'})[0])
+        other = old_draft.replace('Alex Example', 'Sam Example').replace('alex@example.com', 'sam@example.com')
+        status, body, _ = self.request('POST', '/api/resume', {'text':other})
+        self.assertEqual(200, status, body)
+        self.assertEqual(0, json.loads(body)['emphasis_count'])
+
     def test_import_generation_and_skill_visibility(self):
         self.request('POST', '/api/resume', {'text':self.text})
         payload = {'company':'Example','role':'Engineer','jd':'Requirements:\nNode.js and TypeScript required.'}

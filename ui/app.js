@@ -117,22 +117,28 @@ showTab('preview');
 const uploadStatus = document.querySelector('#upload-status');
 const resumeText = document.querySelector('#resume-text');
 let detectedLinks = [];
+let editorTouched = false;
+let savedBoldPhrases = [];
+const boldPhrases = text => [...text.matchAll(/\*\*(.*?)\*\*/g)].map(match => match[1]);
+resumeText.addEventListener('input', () => { editorTouched = true; });
 async function resumeApi(path, payload) {
   const response = await fetch(path, {method: 'POST', headers: {'Content-Type':'application/json', 'X-Resume-Token':document.querySelector('meta[name=resume-token]').content}, body:JSON.stringify(payload)});
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Resume import failed');
   return data;
 }
-function profileReady(data) {
-  if (!resumeText.value && data.review_text) resumeText.value = data.review_text;
+function profileReady(data, afterSave = false) {
+  if (data.review_text && (afterSave || !editorTouched)) resumeText.value = data.review_text;
+  savedBoldPhrases = afterSave || !editorTouched ? boldPhrases(data.review_text || '') : [];
   document.querySelector('#profile-name').textContent = data.name || 'Upload your resume';
   document.querySelector('#profile-summary').textContent = data.name ? 'Local profile connected' : 'No profile connected';
-  document.querySelector('#master-summary').textContent = data.name ? `${data.fact_count} reviewed claims · ${data.link_count} clickable links` : 'Upload a resume to begin';
+  document.querySelector('#master-summary').textContent = data.name ? `${data.fact_count} reviewed claims · ${data.link_count} clickable links · ${data.emphasis_count} bold phrases` : 'Upload a resume to begin';
   generate.disabled = !data.name;
   status.textContent = data.name ? 'Resume connected. Enter a target role and JD to tailor.' : 'Upload and save your reviewed resume above to enable tailoring.';
 }
 document.querySelector('#use-example').addEventListener('click', async () => {
   detectedLinks = [];
+  editorTouched = true;
   resumeText.value = await (await fetch('/resume-format.txt')).text();
   uploadStatus.textContent = 'Example loaded. Replace all sample details before saving.';
 });
@@ -145,6 +151,7 @@ document.querySelector('#resume-file').addEventListener('change', async event =>
   const save = document.querySelector('#save-resume'); save.disabled = true;
   try {
     if (file.size > 5 * 1024 * 1024) throw new Error('Maximum upload size is 5 MB');
+    editorTouched = true;
     uploadStatus.textContent = 'Reading resume...';
     if (file.name.toLowerCase().endsWith('.txt')) {
       detectedLinks = [];
@@ -168,11 +175,13 @@ document.querySelector('#save-resume').addEventListener('click', async () => {
       await prepareText();
       return;
     }
-    const data = await resumeApi('/api/resume', {text:resumeText.value});
-    profileReady(data); status.textContent = 'Resume saved. Enter your target role and JD, then tailor.'; status.className = ''; hasResults = false; currentPayload = null;
+    const currentBoldPhrases = boldPhrases(resumeText.value);
+    const preserveEmphasis = savedBoldPhrases.every(phrase => currentBoldPhrases.includes(phrase));
+    const data = await resumeApi('/api/resume', {text:resumeText.value, preserve_emphasis:preserveEmphasis});
+    profileReady(data, true); status.textContent = 'Resume saved. Enter your target role and JD, then tailor.'; status.className = ''; hasResults = false; currentPayload = null;
     document.querySelector('#results').hidden = true; document.querySelector('#empty').hidden = false;
     document.querySelector('#state-pill').textContent = 'Awaiting JD';
-    uploadStatus.textContent = `Saved ${data.fact_count} claims locally. Enter a job description below.`;
+    uploadStatus.textContent = `Saved ${data.fact_count} claims and ${data.emphasis_count} bold phrases locally. Enter a job description below.`;
   } catch (error) { importError(error); }
   finally { button.disabled = false; }
 });
