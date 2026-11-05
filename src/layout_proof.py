@@ -16,11 +16,10 @@ MUTED = colors.HexColor('#7F8C9D')
 RULE = colors.HexColor('#B8C6D8')
 
 def markup(f, highlights=None, additions=None):
-    text = html.escape(f['approved_text'])
+    from src.emphasis import emphasized_spans
     emphasis = json.loads((ROOT / 'templates/emphasis.json').read_text(encoding='utf-8'))
-    for phrase in sorted(emphasis.get(f['id'], []), key=len, reverse=True):
-        token = html.escape(phrase)
-        text = text.replace(token, '<b>' + token + '</b>')
+    spans = emphasized_spans(f['approved_text'], f.get('emphasis', emphasis.get(f['id'], [])))
+    text = ''.join('<b>' + html.escape(part) + '</b>' if bold else html.escape(part) for part, bold in spans)
     if f['section'] == 'skills':
         label, rest = text.split(':', 1)
         text = '<b><font color="#17365D">' + label + ':</font></b>' + rest

@@ -1,6 +1,7 @@
 """Import explicitly structured resume text without inferring qualifications."""
 import re
 from src.main import terms, tex_link
+from src.emphasis import marked_text, parse_marked_text
 
 SECTIONS = ('summary', 'skills', 'experience', 'projects', 'education', 'achievements', 'certifications')
 
@@ -20,14 +21,14 @@ def review_text(profile):
                 lines.append(' | '.join(employer[key] for key in ('name', 'title', 'dates')))
                 if employer['context']:
                     lines.append('Context: ' + employer['context'])
-                lines.extend('- ' + f['approved_text'] for f in facts if f['employer_id'] == employer['id'])
+                lines.extend('- ' + marked_text(f['approved_text'], f.get('emphasis', [])) for f in facts if f['employer_id'] == employer['id'])
         else:
             for fact in facts:
                 if section == 'projects':
                     lines.append('Title: ' + fact['title'])
                     if fact.get('url'):
                         lines.append('URL: ' + fact['url'])
-                lines.append(fact['approved_text'])
+                lines.append(marked_text(fact['approved_text'], fact.get('emphasis', [])))
                 if section == 'certifications' and fact.get('url'):
                     lines.append(f'Link: {fact["link_label"]} | {fact["url"]}')
     return '\n'.join(lines) + '\n'
@@ -209,12 +210,14 @@ def parse_resume(text):
             employer = {'id': f'employer-{len(employers)+1}', 'name': parts[0], 'title': parts[1], 'dates': parts[2], 'context': ''}
             employers.append(employer)
             continue
-        value = line.lstrip('-• ').strip()
+        value, emphasis = parse_marked_text(line.lstrip('-• ').strip())
         if section == 'skills' and ':' not in value:
             raise ValueError(f'Line {number}: skills must use Category: skill, skill')
         fact = {'id': f'{section}-{len(facts)+1}', 'section': section, 'original_text': value,
                 'approved_text': value, 'tags': sorted(terms(value)), 'status': 'source_backed',
                 'source': {'type': 'user_upload', 'locator': f'line {number}'}}
+        if emphasis:
+            fact['emphasis'] = emphasis
         if section == 'experience':
             if employer is None:
                 raise ValueError('Add Company | Role | Dates before experience bullets')

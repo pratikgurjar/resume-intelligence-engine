@@ -22,6 +22,7 @@ If Python opens the Microsoft Store, install Python and reopen PowerShell. Keep 
 2. Open **Recommended format and example**. Download the TXT example or load it into the editor. Replace every example detail with your own information.
 3. Review the text and arrange it using the labeled fields and section headings below. PDF extraction preserves layout and prepares detected contact fields, headings, employer date rows, project titles, and wrapped bullets for review. Correct any ambiguous or missing fields before saving.
 4. Select **Save reviewed resume**. The app validates the structure before replacing the local profile. Invalid input leaves the previous profile intact.
+   To reproduce emphasis from your source resume, wrap each phrase in `**double asterisks**` in the review editor. The markers are formatting only; the claim stored and checked in the PDF remains the same plain text. PDF uploads do not automatically detect font-weight changes, so review bold phrases before saving.
 5. Enter the company, role, and JD, then select **Tailor my resume**. Review the PDF, changes, and evidence gaps.
 6. Use **Add & highlight supported skills** to surface literal skills already backed by the upload. Adjust selections in **Evidence & gaps**. Review the final PDF before applying.
 

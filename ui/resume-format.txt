@@ -15,7 +15,7 @@ Frameworks: React, Node.js
 
 [Experience]
 Example Company | Software Engineer | 2023 - Present
-- Built REST APIs using Node.js.
+- Built **REST APIs** using Node.js.
 - Added automated tests for request validation.
 
 [Projects]

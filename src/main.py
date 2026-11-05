@@ -291,11 +291,10 @@ def tex_escape(value):
 
 
 def tex_fact(f, highlights=None, additions=None):
-    text = tex_escape(f['approved_text'])
+    from src.emphasis import emphasized_spans
     emphasis = json.loads((ROOT / 'templates/emphasis.json').read_text(encoding='utf-8'))
-    for phrase in sorted(emphasis.get(f['id'], []), key=len, reverse=True):
-        token = tex_escape(phrase)
-        text = text.replace(token, r'\textbf{' + token + '}')
+    spans = emphasized_spans(f['approved_text'], f.get('emphasis', emphasis.get(f['id'], [])))
+    text = ''.join(r'\textbf{' + tex_escape(part) + '}' if bold else tex_escape(part) for part, bold in spans)
     if f['section'] == 'skills':
         label, rest = text.split(':', 1)
         text = r'{\bfseries\color{navy} ' + label + ':}' + rest

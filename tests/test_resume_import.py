@@ -23,8 +23,25 @@ class ImportTests(unittest.TestCase):
         self.assertEqual('Alex Example', p['candidate']['name'])
         self.assertEqual('Example Company', p['employers'][0]['name'])
         for fact in p['facts']:
-            self.assertIn(fact['approved_text'], self.text)
+            self.assertIn(fact['approved_text'], self.text.replace('**', ''))
         self.assertNotIn('experience_years', p['candidate'])
+
+    def test_reviewed_emphasis_survives_save_and_both_renderers(self):
+        from src.resume_import import review_text
+        from src.layout_proof import markup
+        marked = self.text
+        p = parse_resume(marked)
+        fact = next(f for f in p['facts'] if f['section'] == 'experience')
+        self.assertEqual('Built REST APIs using Node.js.', fact['approved_text'])
+        self.assertEqual(['REST APIs'], fact['emphasis'])
+        self.assertIn('**REST APIs**', review_text(p))
+        self.assertEqual(p, parse_resume(review_text(p)))
+        self.assertIn(r'\textbf{REST APIs}', render(p, tailor(p, [])))
+        self.assertIn('<b>REST APIs</b>', markup(fact))
+        with self.assertRaisesRegex(ValueError, 'Close each bold phrase'):
+            parse_resume(marked.replace('**REST APIs**', '**REST APIs'))
+        with self.assertRaisesRegex(ValueError, 'Bold phrases'):
+            parse_resume(marked.replace('**REST APIs**', '****'))
 
     def test_invalid_structure_is_actionable(self):
         for text in ['', self.text.replace('Email:', 'Mail:'), self.text.replace('Frameworks:', 'Frameworks'),
