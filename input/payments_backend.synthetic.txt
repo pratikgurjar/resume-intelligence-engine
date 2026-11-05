@@ -1,0 +1,9 @@
+# Synthetic JD - test fixture, not a real vacancy
+Requirements:
+Card payments and tokenization required.
+EMI, EMV 3-D Secure and ISO 8583 required.
+PCI DSS required.
+Responsibilities:
+Reconciliation, incident management and security.
+Preferred:
+Go and Spring Boot.

@@ -1,0 +1,62 @@
+# Upload workflow review
+
+## Requirement and Acceptance Criteria
+Remove the personal bundled resume; add PDF/TXT upload, recommended format, text review, local persistence, and tailoring from reviewed evidence.
+
+## Scope and Non-Goals
+Single-user local UI. No OCR, automatic arbitrary-layout interpretation, semantic rewriting, or hosted upload service.
+
+## Existing Code and Reuse Findings
+Reuse evidence matching, selected skill validation, rendering, and reports. Education rendering now accepts arbitrary degree text. Local profile loading resolves the current storage path at runtime.
+
+## Baseline and Pre-existing Issues
+The earlier personal-resume suite passed 30 tests. Those fixtures exposed personal data and were replaced by synthetic import/integration fixtures and retained generic engine invariants. Local XeLaTeX remains unavailable; Windows Calibri is required by the fallback.
+
+## Blast Radius
+Medium: profile initialization, upload API, generic education renderer, local storage, and UI onboarding. The personal master, emphasis, personal review documents, and personal fixture scripts are removed from distribution.
+
+## Solution and Alternatives
+Use explicit reviewed text fields and section headings. PDF extraction feeds the review editor; it does not silently guess employers, tenure, or credentials. An automatic PDF layout parser was deferred because ambiguous grouping can create false claims.
+
+## Implementation Summary
+The upload API checks type, size, PDF encryption/page count, extracted-text bounds, and resume structure. A validated profile is atomically saved under ignored local-data. Source claims retain line provenance. The UI loads profile metadata, blocks initial generation until import, offers a downloadable synthetic TXT template, and clears old displayed results after replacement.
+
+## Edge Cases and Failure Modes
+Invalid imports preserve the previous profile. Malformed/scanned/encrypted PDFs receive errors. TeX content is escaped. Missing profiles block generation. Generic degrees no longer require MCA text. Empty optional sections are allowed. Long resumes can fail the one-page PDF check and still require human review.
+
+## Security and Privacy
+Uploads and generated runs are excluded from Git. Personal source and metadata were removed; old local files were backed up outside the repository. Use clean repository history for distribution; retain the old repository privately. The app remains loopback-only with Host/token checks. It is not a multi-user service.
+
+## Reliability, Performance, and Observability
+Serialized generation is reused. Atomic profile replacement avoids partial JSON. Reports retain claim provenance and validation. PDF work is bounded by upload size and page count; no performance benchmark was run.
+
+## Compatibility, Migration, Deployment, and Rollback
+Fresh installations need one reviewed upload. Existing local runs remain local. Personal profile files are not auto-imported. Restore from the private local backup if required. Restart the Python server after updating source.
+
+## Testing and Verification
+18 synthetic unittest tests passed; node --check ui/app.js passed. Coverage includes parser validation, employer grouping, malformed PDF extraction, empty install, failed-import preservation, PDF generation/extraction, skill visibility and unchanged fit, filename headers, source integrity, TeX injection, and token/file boundaries. Chrome verified example import and PDF generation. No local XeLaTeX compile, fresh-machine install, mobile, or cross-browser test was run. PDF upload was tested through HTTP; Chrome used the example editor workflow.
+
+## Quality Score
+Scores apply to this bounded local feature.
+
+| Category | Score | Evidence | Deficiency / remaining risk | Improvement |
+|---|---:|---|---|---|
+| Requirement and scope | 19/20 | Upload and format guidance implemented | PDF requires manual structuring | Reviewed layout parser |
+| Understanding and reuse | 10/10 | Existing engine reused | None in scope | None |
+| Integration and blast radius | 9/10 | Synthetic HTTP generation | CLI needs imported profile | Fresh-install CLI check |
+| Edge cases and failures | 13/15 | Invalid imports preserve state | No OCR or full PDF resource isolation | Add worker isolation if hosted |
+| Verification | 13/15 | 18 tests and Chrome flow | No mobile or local TeX QA | Run those environments |
+| Maintainability | 9/10 | Small explicit parser | Fixed section vocabulary | Add aliases only with tests |
+| Security/privacy/integrity | 8/8 | Ignored uploads and clean source | Local backups still contain personal files | Keep backups private |
+| Reliability/performance/observability | 6/7 | Atomic persistence and serialized rendering | No benchmark | Measure if latency grows |
+| Compatibility/rollback | 4/5 | Private backup available | Existing master setup changes | Review migration on other machines |
+| Total | 91/100 | Local feature ready for review | Limits above remain | See above |
+
+## Commit Readiness
+Checks pass for the local workflow. Public distribution must use the clean repository, never the private backup history.
+
+## Remaining Risks
+Uploaded claims are user statements, not independent verification. Links in free text remain plain text. Resume formatting needs human review. Replacing a profile does not delete older local output runs.
+
+## Optional Follow-up Improvements
+Add reviewed employer/date extraction, optional contact-link fields, OCR integration, and configurable fonts as separate changes.

@@ -1,0 +1,30 @@
+Name: Alex Example
+Headline: Software Engineer
+Email: alex@example.com
+Phone:
+Location: Your city
+Availability:
+
+[Summary]
+Software engineer building web applications.
+
+[Skills]
+Languages: JavaScript, Python
+Frameworks: React, Node.js
+
+[Experience]
+Example Company | Software Engineer | 2023 - Present
+- Built REST APIs using Node.js.
+- Added automated tests for request validation.
+
+[Projects]
+Built a personal task manager using React and TypeScript.
+
+[Education]
+Example University, Bachelor of Science, 2023
+
+[Achievements]
+Replace this with a verified achievement or remove this section.
+
+[Certifications]
+Replace this with a completed certification or remove this section.

@@ -1,0 +1,24 @@
+% Source PDF: master/original_resume.pdf, US Letter, one page.
+% Measured source text bounds are approximately x=36..578pt, y=35..763pt.
+% TeX spacing remains an estimate until the compiled PDF is compared visually.
+\documentclass[letterpaper]{article}
+\usepackage[left=36pt,right=36pt,top=33pt,bottom=26pt]{geometry}
+\usepackage{fontspec}
+\setmainfont{Calibri}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\definecolor{navy}{HTML}{17365D}
+\definecolor{muted}{HTML}{7F8C9D}
+\definecolor{ruleblue}{HTML}{B8C6D8}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1pt}
+\titleformat{\section}{\bfseries\fontsize{8.5}{10}\selectfont\color{navy}}{}{0em}{}[\color{ruleblue}\titlerule]
+\titlespacing*{\section}{0pt}{4pt}{3pt}
+\setlist[itemize]{leftmargin=9pt,labelsep=2pt,itemsep=0pt,topsep=1pt,parsep=0pt,label=\textbullet}
+\begin{document}
+\fontsize{9.5}{11.6}\selectfont
+@@BODY@@
+\end{document}

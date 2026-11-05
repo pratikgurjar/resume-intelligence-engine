@@ -1,0 +1,9 @@
+# Synthetic JD - test fixture, not a real vacancy
+Requirements:
+Java and Spring Boot required.
+REST APIs and Hibernate required.
+Redis caching and automated testing.
+Responsibilities:
+Code review and performance optimization.
+Preferred:
+Kubernetes and CI/CD.

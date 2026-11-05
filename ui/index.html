@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="resume-token" content="@@TOKEN@@">
+  <title>Resume workspace</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="/">r<span>ésumé</span><i>WORKSPACE</i></a><span class="local"><b></b> Local & private</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">YOUR EXPERIENCE. THE RIGHT EMPHASIS.</p><h1>A resume for your next role.</h1><p>Paste a job description. Bring your most relevant experience forward.</p></div><div class="profile"><div><strong id="profile-name">Upload your resume</strong><span id="profile-summary">No profile connected</span></div></div></div>
+    <div class="workspace">
+      <aside>
+        <section class="upload-card" aria-label="Resume setup">
+          <h2>Start with your resume</h2>
+          <p>Upload a selectable-text PDF or UTF-8 TXT (maximum 5 MB). Review the text below before saving your local profile.</p>
+          <label for="resume-file">Resume file</label><input id="resume-file" type="file" accept=".pdf,.txt">
+          <details><summary>Recommended format and example</summary><p>Use one column, plain text, labeled contact fields, and the section names shown in the template. Avoid tables, icons, photos, headers, and footers. PDF extraction may need manual correction.</p><a href="/resume-format.txt" download>Download example TXT</a><button id="use-example" type="button">Load example</button><p>Experience: Company | Role | Dates, followed by bullets starting with -. Skills: Category: skill, skill. Keep one complete claim per line.</p></details>
+          <label for="resume-text">Review resume text</label><textarea id="resume-text" maxlength="60000" placeholder="Upload a resume, or load the example and replace every sample detail."></textarea>
+          <button id="save-resume" type="button">Save reviewed resume</button><p id="upload-status" role="status" aria-live="polite">Uploads stay in local-data on this computer and are excluded from Git.</p>
+        </section>
+        <form id="tailor-form">
+          <div class="step"><span>01</span><h2>Target opportunity</h2></div>
+          <label for="company">Company</label><input id="company" name="company" placeholder="e.g. Acme Payments" maxlength="150" required>
+          <label for="role">Target role</label><input id="role" name="role" placeholder="e.g. Senior Backend Engineer" maxlength="150" required>
+          <div class="label-row"><label for="jd">Job description</label><span id="char-count">0 characters</span></div>
+          <textarea id="jd" name="jd" placeholder="Paste the responsibilities, required skills, and qualifications here…" maxlength="60000" required></textarea>
+          <p class="hint">Your original resume stays intact. Only approved content is prioritized within its existing sections.</p>
+          <button id="generate" type="submit" disabled>Tailor my resume <span aria-hidden="true">↗</span></button>
+          <p id="status" role="status" aria-live="polite">Ready when you are.</p>
+        </form>
+        <div class="master-card"><span class="check">✓</span><div><strong>Built from your master</strong><p><span id="master-summary">Upload a resume to begin</span><br>Fixed layout · Reviewed source claims</p></div></div>
+      </aside>
+      <section class="result-area" aria-label="Resume results">
+        <div class="result-top"><div class="step"><span>02</span><h2>Review your resume</h2></div><span class="pill" id="state-pill">Awaiting JD</span></div>
+        <div class="tabs" role="tablist" aria-label="Results"><button role="tab" aria-selected="true" id="tab-preview" aria-controls="preview" data-tab="preview">Resume preview</button><button role="tab" aria-selected="false" id="tab-changes" aria-controls="changes" data-tab="changes">What changed <span id="change-count"></span></button><button role="tab" aria-selected="false" id="tab-evidence" aria-controls="evidence" data-tab="evidence">Evidence & gaps</button></div>
+        <div id="empty"><div class="paper-icon"><span></span><span></span><span></span><span></span></div><h3>Your next resume starts here.</h3><p>Generate a version to see a PDF preview,<br>the changes made, and requirements to review.</p><div class="empty-steps"><span>1. Paste JD</span><b>→</b><span>2. Generate</span><b>→</b><span>3. Review</span></div></div>
+        <div id="results" hidden>
+          <div class="summary"><div><span>Evidence coverage</span><strong id="fit"></strong></div><div><span>JD skills in Skills</span><strong id="visibility"></strong></div><div><span>Application assessment</span><strong id="assessment"></strong></div><div><span>Facts retained</span><strong id="facts"></strong></div></div>
+          <div class="skill-action-bar"><div><strong>Make relevant skills easier to find</strong><p id="skill-action-hint">Surface skills supported by your master. Candidate fit stays the same.</p></div><button id="apply-skills" type="button">Add & highlight supported skills</button></div>
+          <div id="skill-message" role="status" aria-live="polite"></div>
+          <div id="preview" role="tabpanel" aria-labelledby="tab-preview"><div class="preview-note" id="renderer-note"></div><div class="pdf-toolbar"><span>Actual generated PDF · Page 1</span><a id="open-pdf" target="_blank" rel="noopener">Open PDF with clickable links ↗</a></div><div class="pdf-canvas"><img id="pdf-image" alt="First page of your generated resume"></div></div>
+          <div id="changes" role="tabpanel" aria-labelledby="tab-changes" hidden><div class="panel-copy"><h3>Relevant experience, in the right place.</h3><p>Review section ordering, skill highlights, and skills added in the existing format. Original claims, dates, employers, and metrics are preserved.</p></div><div id="changes-list"></div></div>
+          <div id="evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden><div class="panel-copy"><h3>Turn evidence into useful edits.</h3><p>Select supported skills below, then use the button above. Existing skills are highlighted and additional skills join their normal skills row. Evidence and experience context stay in the change report. Missing requirements need new evidence before they can be added.</p></div><div id="skill-options"></div><div class="panel-copy"><h3>Requirements to review</h3><p>Coverage uses explicit terms. Unresolved clauses are extractor limitations, not proof that you lack the qualification. The provisional score can include this parsing noise.</p></div><div id="mapping-list"></div><div id="master-warnings"></div></div>
+          <div class="downloads"><a id="download-pdf" download>Download PDF ↓</a><a id="download-tex" download>LaTeX source</a><a id="download-report" download>Quality report</a><a id="download-changes" download>Changes</a></div>
+          <div class="review-note"><strong>One last look before applying.</strong><span>Review the factual claims, genuine gaps, clickable links, and final PDF layout. Generation does not grant application approval.</span></div>
+        </div>
+      </section>
+    </div>
+    <footer>LOCAL RESUME ENGINE <span>Evidence first. Human review always.</span></footer>
+  </main>
+</body>
+</html>

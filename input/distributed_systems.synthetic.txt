@@ -1,0 +1,9 @@
+# Synthetic JD - test fixture, not a real vacancy
+Requirements:
+Go required.
+Distributed systems and system design required.
+Kafka and PostgreSQL required.
+Responsibilities:
+Reliability, disaster recovery, incident management and observability.
+Preferred:
+Kubernetes and performance optimization.
